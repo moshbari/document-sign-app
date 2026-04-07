@@ -22,7 +22,6 @@ model User {
 
   documents Document[]
   templates Template[]
-  auditLogs AuditLog[]
 
   @@index([email])
   @@index([company])

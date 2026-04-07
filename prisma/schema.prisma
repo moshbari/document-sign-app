@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  company   String?
+  role      String     @default("user") // "admin" or "user"
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  documents Document[]
+  templates Template[]
+  auditLogs AuditLog[]
+
+  @@index([email])
+  @@index([company])
+}
+
+model Document {
+  id        String     @id @default(cuid())
+  title     String
+  status    String     @default("DRAFT") // "DRAFT", "PENDING", "COMPLETED", "EXPIRED"
+  content   Json // JSON schema for template fields, parties, clauses, etc.
+  createdBy User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById String
+
+  signers   Signer[]
+  auditLogs AuditLog[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Template {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  content     Json // JSON schema defining template fields with names, types, positions
+  createdBy   User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById String
+  isPublic    Boolean    @default(false)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([createdById])
+  @@index([isPublic])
+  @@index([createdAt])
+}
+
+model Signer {
+  id            String     @id @default(cuid())
+  name          String
+  email         String
+  document      Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId    String
+  status        String     @default("PENDING") // "PENDING", "SIGNED", "DECLINED"
+  token         String     @unique // Unique signing link token
+  signedAt      DateTime?
+  signatureData String? // Base64 encoded signature image
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([documentId])
+  @@index([email])
+  @@index([token])
+  @@index([status])
+}
+
+model AuditLog {
+  id          String     @id @default(cuid())
+  document    Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
+  action      String // "created", "signed", "declined", "sent_to_signer", etc.
+  performedBy String // User ID or email
+  ipAddress   String?
+  timestamp   DateTime   @default(now())
+
+  @@index([documentId])
+  @@index([timestamp])
+}

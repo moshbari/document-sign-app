@@ -1,0 +1,34 @@
+[build]
+builder = "nixpacks"
+
+[build.nixpacks]
+# Create .env file from template for build time
+setup = ["echo 'Setting up environment...'"]
+
+[deploy]
+# Health check configuration
+startCommand = "node_modules/.bin/next start"
+healthcheckPath = "/api/health"
+healthcheckInterval = 30
+healthcheckTimeout = 5
+
+[[services]]
+name = "web"
+buildCommand = "npm run build"
+startCommand = "npm start"
+restartPolicyMaxRetries = 0
+
+# Environment variables are set via Railway dashboard
+# Required:
+# - DATABASE_URL: PostgreSQL connection string
+# - NEXTAUTH_SECRET: Random secret key for NextAuth
+# - NEXTAUTH_URL: The deployed app URL
+# - SMTP configuration variables
+
+[env]
+# Example environment configuration for Railway
+# These are typically set in the Railway dashboard
+
+[volumes]
+# Optional: configure persistent storage if needed
+# /app/uploads = "uploads"

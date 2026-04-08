@@ -13,6 +13,10 @@ import {
   Copy,
   Check,
   Link as LinkIcon,
+  Pencil,
+  X,
+  Plus,
+  Save,
 } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
@@ -53,6 +57,11 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editSigners, setEditSigners] = useState<{ name: string; email: string }[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -120,6 +129,73 @@ export default function DocumentDetailPage() {
     }
   };
 
+  const openEditModal = () => {
+    if (!document) return;
+    setEditTitle(document.title);
+    // Handle content - could be JSON with fields or plain text
+    if (typeof document.content === 'string') {
+      setEditContent(document.content);
+    } else if (document.content?.text) {
+      setEditContent(document.content.text);
+    } else {
+      setEditContent(JSON.stringify(document.content, null, 2));
+    }
+    setEditSigners(
+      document.signers
+        .filter((s) => s.status !== 'SIGNED')
+        .map((s) => ({ name: s.name, email: s.email }))
+    );
+    setEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!document) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/documents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          content: editContent,
+          signers: [
+            // Include signed signers as-is
+            ...document.signers
+              .filter((s) => s.status === 'SIGNED')
+              .map((s) => ({ name: s.name, email: s.email })),
+            // Include edited unsigned signers
+            ...editSigners,
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save');
+      }
+      const updated = await res.json();
+      setDocument(updated);
+      setEditing(false);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addEditSigner = () => {
+    setEditSigners([...editSigners, { name: '', email: '' }]);
+  };
+
+  const removeEditSigner = (index: number) => {
+    setEditSigners(editSigners.filter((_, i) => i !== index));
+  };
+
+  const updateEditSigner = (index: number, field: 'name' | 'email', value: string) => {
+    const updated = [...editSigners];
+    updated[index][field] = value;
+    setEditSigners(updated);
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -165,6 +241,15 @@ export default function DocumentDetailPage() {
           </div>
 
           <div className="flex gap-2">
+            {document.status !== 'COMPLETED' && (
+              <button
+                onClick={openEditModal}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit
+              </button>
+            )}
             {document.status !== 'DRAFT' && (
               <button
                 onClick={handleResendInvites}
@@ -437,6 +522,126 @@ export default function DocumentDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editing && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-10 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 mb-10">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-amber-500" />
+                Edit Document
+              </h2>
+              <button
+                onClick={() => setEditing(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Document Title</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+                />
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  rows={12}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none resize-y text-sm"
+                />
+              </div>
+
+              {/* Signers */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pending Signers
+                </label>
+                {/* Show signed signers as read-only */}
+                {document.signers.filter((s) => s.status === 'SIGNED').length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {document.signers
+                      .filter((s) => s.status === 'SIGNED')
+                      .map((s) => (
+                        <div key={s.id} className="flex items-center gap-2 bg-green-50 rounded-lg p-3 text-sm">
+                          <Check className="w-4 h-4 text-green-600" />
+                          <span className="font-medium text-green-800">{s.name}</span>
+                          <span className="text-green-600">({s.email})</span>
+                          <span className="ml-auto text-xs text-green-500">Signed â cannot edit</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {editSigners.map((signer, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={signer.name}
+                        onChange={(e) => updateEditSigner(idx, 'name', e.target.value)}
+                        placeholder="Full name"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+                      />
+                      <input
+                        type="email"
+                        value={signer.email}
+                        onChange={(e) => updateEditSigner(idx, 'email', e.target.value)}
+                        placeholder="email@example.com"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-sm"
+                      />
+                      <button
+                        onClick={() => removeEditSigner(idx)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={addEditSigner}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-amber-600 hover:text-amber-700 font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Signer
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+              <button
+                onClick={() => setEditing(false)}
+                className="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

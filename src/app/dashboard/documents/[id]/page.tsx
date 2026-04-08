@@ -10,6 +10,9 @@ import {
   FileText,
   Clock,
   User,
+  Copy,
+  Check,
+  Link as LinkIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
@@ -20,6 +23,7 @@ interface Signer {
   email: string;
   status: 'PENDING' | 'SIGNED' | 'DECLINED';
   signedAt?: Date;
+  token: string;
 }
 
 interface AuditLog {
@@ -48,6 +52,7 @@ export default function DocumentDetailPage() {
   const [document, setDocument] = useState<DocumentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -79,6 +84,25 @@ export default function DocumentDetailPage() {
       router.push('/dashboard/documents');
     } catch (error) {
       alert('Failed to delete document');
+    }
+  };
+
+  const handleCopyLink = async (token: string) => {
+    const signingUrl = `${window.location.origin}/sign/${token}`;
+    try {
+      await navigator.clipboard.writeText(signingUrl);
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = signingUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 2000);
     }
   };
 
@@ -198,42 +222,126 @@ export default function DocumentDetailPage() {
         </div>
       </div>
 
-      {/* Signers section */}
+      {/* Signers & Signing Links section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Signers</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <LinkIcon className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Signers & Signing Links</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Share each signer&apos;s unique link via email, WhatsApp, or any messaging app. Each link lets the recipient sign the document securely.
+        </p>
 
         {document.signers.length === 0 ? (
           <p className="text-gray-600">No signers added</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {document.signers.map((signer) => (
               <div
                 key={signer.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                className="p-4 border border-gray-200 rounded-lg"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{signer.name}</p>
+                      <p className="text-sm text-gray-600">{signer.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{signer.name}</p>
-                    <p className="text-sm text-gray-600">{signer.email}</p>
+
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={signer.status} />
+                    {signer.signedAt && (
+                      <div className="text-xs text-gray-500">
+                        {new Date(signer.signedAt).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={signer.status} />
-                  {signer.signedAt && (
-                    <div className="text-xs text-gray-500">
-                      {new Date(signer.signedAt).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
+                {/* Signing Link */}
+                {signer.status === 'PENDING' && (
+                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/sign/${signer.token}`}
+                      className="flex-1 text-sm text-gray-600 bg-transparent border-none outline-none truncate"
+                    />
+                    <button
+                      onClick={() => handleCopyLink(signer.token)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        copiedToken === signer.token
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {copiedToken === signer.token ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy Link
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+                {signer.status === 'SIGNED' && (
+                  <div className="text-sm text-green-600 bg-green-50 rounded-lg p-3 flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    This party has signed the document
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Document Content section */}
+      {document.content && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Document Content</h2>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-6">
+            {typeof document.content === 'object' && document.content.fields ? (
+              <div className="space-y-4">
+                {(document.content as any).fields.map((field: any, idx: number) => (
+                  <div key={field.id || idx} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-gray-700">{field.label}</span>
+                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full capitalize">{field.type}</span>
+                      {field.required && (
+                        <span className="text-xs text-red-500">Required</span>
+                      )}
+                    </div>
+                    {field.value && (
+                      <p className="text-sm text-gray-600 mt-1">{field.value}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : typeof document.content === 'string' ? (
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700">
+                {document.content}
+              </div>
+            ) : (
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                {JSON.stringify(document.content, null, 2)}
+              </pre>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Audit log section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">

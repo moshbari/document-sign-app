@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import bcryptjs from 'bcryptjs';
 
-const SUPER_ADMIN_EMAIL = 'engrmoshbari@gmail.com';
+const SUPER_ADMIN_EMAIL = 'engr.mbari@gmail.com';
 
 async function isAdmin() {
   const session = await auth();

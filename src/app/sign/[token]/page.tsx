@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -16,7 +18,7 @@ import {
 interface DocumentInfo {
   id: string;
   title: string;
-  content: string;
+  content: string | Record<string, any>;
   creatorName: string;
   createdAt: string;
 }
@@ -286,11 +288,28 @@ export default function SignPage() {
                   </h3>
                 </div>
                 <div className="px-6 py-4">
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap rounded bg-slate-50 p-4 text-slate-700">
-                    {typeof document.content === "string"
-                      ? document.content
-                      : JSON.stringify(document.content, null, 2)}
-                  </div>
+                  {typeof document.content === 'object' && document.content !== null && 'fields' in document.content && Array.isArray((document.content as any).fields) ? (
+                    <div className="space-y-4">
+                      {(document.content as any).fields.map((field: any, idx: number) => (
+                        <div key={field.id || idx} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-700">{field.label}</span>
+                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full capitalize">{field.type}</span>
+                            {field.required && <span className="text-xs text-red-500">Required</span>}
+                          </div>
+                          {field.value && <p className="text-sm text-gray-600 mt-1">{field.value}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : typeof document.content === 'string' ? (
+                    <div className="prose prose-sm max-w-none whitespace-pre-wrap rounded bg-slate-50 p-4 text-slate-700">
+                      {document.content}
+                    </div>
+                  ) : (
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap rounded bg-slate-50 p-4">
+                      {JSON.stringify(document.content, null, 2)}
+                    </pre>
+                  )}
                 </div>
               </div>
             )}
@@ -354,7 +373,7 @@ export default function SignPage() {
       {/* Footer */}
       <div className="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-600">
         <p>Powered by OneSign - Secure Digital Document Signing</p>
-        <p className="mt-1">© 2026 OneSign. All rights reserved.</p>
+        <p className="mt-1">Â© 2026 OneSign. All rights reserved.</p>
       </div>
     </div>
   );

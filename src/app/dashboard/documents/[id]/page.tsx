@@ -305,6 +305,62 @@ export default function DocumentDetailPage() {
         )}
       </div>
 
+      {/* Shared View Link */}
+      {document.status !== 'DRAFT' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <LinkIcon className="w-5 h-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Shared View Link</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Share this link with all parties. Anyone with the link can view the agreement status and download a PDF.
+          </p>
+          <div className="flex items-center gap-2 bg-purple-50 rounded-lg p-3">
+            <input
+              type="text"
+              readOnly
+              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/view/${document.id}`}
+              className="flex-1 text-sm text-purple-700 bg-transparent border-none outline-none truncate"
+            />
+            <button
+              onClick={() => {
+                const viewUrl = `${window.location.origin}/view/${document.id}`;
+                navigator.clipboard.writeText(viewUrl).then(() => {
+                  setCopiedToken('view');
+                  setTimeout(() => setCopiedToken(null), 2000);
+                }).catch(() => {
+                  const textArea = window.document.createElement('textarea');
+                  textArea.value = viewUrl;
+                  window.document.body.appendChild(textArea);
+                  textArea.select();
+                  window.document.execCommand('copy');
+                  window.document.body.removeChild(textArea);
+                  setCopiedToken('view');
+                  setTimeout(() => setCopiedToken(null), 2000);
+                });
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                copiedToken === 'view'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-purple-600 text-white hover:bg-purple-700'
+              }`}
+            >
+              {copiedToken === 'view' ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy Link
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Document Content section */}
       {document.content && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">

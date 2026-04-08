@@ -288,12 +288,12 @@ export default function AdminPage() {
                     <select
                       value={user.role}
                       onChange={(e) => handleRoleChange(user, e.target.value)}
-                      disabled={user.email === 'engrmoshbari@gmail.com'}
+                      disabled={user.email === 'engr.mbari@gmail.com'}
                       className={`text-xs font-medium px-2 py-1 rounded-lg border ${
                         user.role === 'admin'
                           ? 'bg-purple-50 text-purple-700 border-purple-200'
                           : 'bg-blue-50 text-blue-700 border-blue-200'
-                      } ${user.email === 'engrmoshbari@gmail.com' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                      } ${user.email === 'engr.mbari@gmail.com' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -331,7 +331,7 @@ export default function AdminPage() {
                       >
                         <Key className="w-4 h-4" />
                       </button>
-                      {user.email !== 'engrmoshbari@gmail.com' && (
+                      {user.email !== 'engr.mbari@gmail.com' && (
                         <button
                           onClick={() => setDeleteUser(user)}
                           className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

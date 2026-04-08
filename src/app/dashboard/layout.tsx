@@ -9,12 +9,29 @@ import {
   Menu,
   X,
   LogOut,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+interface UserSession {
+  name: string;
+  email: string;
+  role: string;
+}
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<UserSession | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) setUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -22,6 +39,11 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/templates', label: 'Templates', icon: FolderOpen },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
+
+  // Add admin link if user is admin
+  if (user?.role === 'admin') {
+    navItems.push({ href: '/dashboard/admin', label: 'Admin', icon: Shield });
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -104,9 +126,14 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </button>
             <div className="w-px h-6 bg-gray-200" />
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">User</p>
-              <p className="text-xs text-gray-500">user@example.com</p>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {user?.name?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">{user?.name || 'Loading...'}</p>
+                <p className="text-xs text-gray-500">{user?.email || ''}</p>
+              </div>
             </div>
           </div>
         </header>

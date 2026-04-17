@@ -41,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# private / sensitive working files kept in the workspace folder
+# (trade licence, investment deck, playbooks, etc.). Never commit.
+/*.pdf
+/*.docx
+/Investment_Preview-*.jpg
+/Proposal Builder From Claude Web/

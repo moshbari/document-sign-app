@@ -17,9 +17,15 @@ export const LEGAL_CONFIG = {
   legalEntity: "ZPresso LLC",
   jurisdiction: "Sharjah Media City (SHAMS) Free Zone, United Arab Emirates",
   registrationType: "Free Zone Company (FZ-LLC)",
-  tradeLicenseNumber: "[Trade License No. — to be inserted]",
+  // Values below mirror the Business License issued by the Sharjah Media
+  // City (Shams) Free Zone Authority. Last verified against License No.
+  // 2115421.01, expires 18-Aug-2026.
+  tradeLicenseNumber: "2115421.01",
+  formationNumber: "2115421",
+  licenseIssuedOn: "19 August 2021",
+  licenseExpiresOn: "18 August 2026",
   registeredAddress:
-    "SHAMS Free Zone, Al Messaned, Al Bataeh, Sharjah, United Arab Emirates",
+    "Sharjah Media City (SHAMS), P.O. Box 839, Sharjah, United Arab Emirates",
 
   // Contact
   contactEmail: "support@onesign.click",

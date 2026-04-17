@@ -33,9 +33,14 @@ export default function ImpressumPage() {
 
       <h2>Registration</h2>
       <p>
-        Registered in the Sharjah Media City (SHAMS) Free Zone.
+        Registered in the Sharjah Media City (SHAMS) Free Zone under the
+        authority of the Government of Sharjah.
         <br />
         Trade licence number: {C.tradeLicenseNumber}
+        <br />
+        Formation number: {C.formationNumber}
+        <br />
+        Licence valid: {C.licenseIssuedOn} &ndash; {C.licenseExpiresOn}
       </p>
 
       <h2>Contact</h2>

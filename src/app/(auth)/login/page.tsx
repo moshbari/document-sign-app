@@ -1,19 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { PenTool, Mail, Lock } from "lucide-react";
+import { PenTool, Mail, Lock, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draft");
+  const registered = searchParams.get("registered") === "true";
+  const prefillEmail = searchParams.get("email") || "";
+
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If we arrive with ?email= from the register redirect, prefill once.
+  useEffect(() => {
+    if (prefillEmail && !email) {
+      setEmail(prefillEmail);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +57,15 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error || "Invalid email or password");
       } else if (result?.ok) {
-        router.push("/dashboard");
+        // If the user came in from the contract builder, hand them off to the
+        // claim-draft page so we can turn their saved draft into a real doc.
+        if (draftId) {
+          router.push(
+            `/dashboard/claim-draft?id=${encodeURIComponent(draftId)}`
+          );
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -54,12 +89,34 @@ export default function LoginPage() {
             </h1>
           </div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            Welcome Back
+            {draftId ? "Sign in to send your contract" : "Welcome Back"}
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            Sign in to your account to continue
+            {draftId
+              ? "Your contract draft is waiting. Sign in and we’ll set it up."
+              : "Sign in to your account to continue"}
           </p>
         </div>
+
+        {/* Just-registered success banner (from the register redirect) */}
+        {registered && (
+          <div className="mb-5 flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-emerald-900 dark:text-emerald-200">
+              Account created. Sign in to pick up where you left off.
+            </div>
+          </div>
+        )}
+
+        {draftId && !registered && (
+          <div className="mb-5 flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+            <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-indigo-900 dark:text-indigo-200">
+              Your contract draft is saved locally. Sign in and we’ll turn it
+              into a real document ready to send.
+            </div>
+          </div>
+        )}
 
         {/* Login Card */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 animate-slide-in-up">
@@ -133,13 +190,19 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                Don't have an account?
+                Don&apos;t have an account?
               </span>
             </div>
           </div>
 
           {/* Register Link */}
-          <Link href="/register">
+          <Link
+            href={
+              draftId
+                ? `/register?draft=${encodeURIComponent(draftId)}`
+                : "/register"
+            }
+          >
             <Button
               type="button"
               variant="outline"

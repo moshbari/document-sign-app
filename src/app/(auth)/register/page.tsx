@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { PenTool, Mail, Lock, User, Building2 } from "lucide-react";
+import { PenTool, Mail, Lock, User, Building2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -16,7 +16,23 @@ interface FormErrors {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
+  );
+}
+
+function RegisterPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draft");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -108,8 +124,13 @@ export default function RegisterPage() {
         return;
       }
 
-      // Redirect to login page on success
-      router.push("/login?registered=true");
+      // Redirect to login. If they came in via the contract builder, keep
+      // the draft id in the query so the login page can forward to the
+      // claim flow after sign-in.
+      const loginUrl = draftId
+        ? `/login?registered=true&draft=${encodeURIComponent(draftId)}&email=${encodeURIComponent(formData.email)}`
+        : "/login?registered=true";
+      router.push(loginUrl);
     } catch (err) {
       setSubmitError("An unexpected error occurred. Please try again.");
       console.error(err);
@@ -132,12 +153,24 @@ export default function RegisterPage() {
             </h1>
           </div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            Create Account
+            {draftId ? "One last step" : "Create Account"}
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            Join thousands of teams using OneSign
+            {draftId
+              ? "Create your free account to send the contract you just built."
+              : "Join thousands of teams using OneSign"}
           </p>
         </div>
+
+        {draftId && (
+          <div className="mb-5 flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+            <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-indigo-900 dark:text-indigo-200">
+              Your contract draft is saved. After signup we&apos;ll send it
+              straight to your client — no credit card, no learning curve.
+            </div>
+          </div>
+        )}
 
         {/* Register Card */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 animate-slide-in-up">
@@ -264,7 +297,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Login Link */}
-          <Link href="/login">
+          <Link href={draftId ? `/login?draft=${encodeURIComponent(draftId)}` : "/login"}>
             <Button
               type="button"
               variant="outline"

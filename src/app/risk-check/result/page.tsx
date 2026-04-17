@@ -41,6 +41,12 @@ export default async function RiskCheckResult({
     .map((c, i) => `${i + 1}. ${c.title}\n\n${c.body}\n`)
     .join("\n");
 
+  // Preserve the encoded answers so the contract builder can pre-fill clauses
+  // from the exact flags this user raised.
+  const contractBuilderHref = sp.r
+    ? `/risk-check/contract?r=${encodeURIComponent(sp.r)}`
+    : "/risk-check/contract";
+
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950">
       {/* Nav */}
@@ -114,12 +120,16 @@ export default async function RiskCheckResult({
                 proper signed agreement — OneSign makes that a 60-second job.
               </p>
               <Link
-                href="/register"
+                href={contractBuilderHref}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"
               >
-                Send your contract with OneSign
+                Build your protected contract
                 <ArrowRight className="w-4 h-4" />
               </Link>
+              <p className="mt-3 text-xs text-emerald-800 dark:text-emerald-300">
+                No signup needed to build. You&apos;ll only create an account
+                when you&apos;re ready to send.
+              </p>
             </div>
           )}
 
@@ -244,18 +254,19 @@ export default async function RiskCheckResult({
           {/* CTA */}
           <section className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-2xl p-6 sm:p-10 mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">
-              Now send the contract in 60 seconds.
+              Turn these clauses into a signed contract.
             </h2>
             <p className="text-indigo-100 text-base sm:text-lg mb-6 max-w-xl">
-              OneSign turns your clauses into a signed, legally binding
-              agreement — no DocuSign pricing, no learning curve. Start free.
+              Your clauses are pre-loaded. Add your project details, review,
+              and send it to your client in under two minutes. No signup
+              required until you hit send.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href="/register"
+                href={contractBuilderHref}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-100 text-indigo-700 rounded-lg font-semibold shadow-md"
               >
-                Start with OneSign free
+                Build your protected contract
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
@@ -265,6 +276,10 @@ export default async function RiskCheckResult({
                 About the Risk Check
               </Link>
             </div>
+            <p className="mt-4 text-xs text-indigo-100/80">
+              Free. Takes about 90 seconds. You only create an account at the
+              very end, when your contract is ready to email.
+            </p>
           </section>
 
           {/* Share row */}

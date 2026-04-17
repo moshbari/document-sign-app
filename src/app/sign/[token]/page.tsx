@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SignaturePad from "@/components/SignaturePad";
+import RiskCheckContractView, {
+  isRiskCheckContract,
+} from "@/components/RiskCheckContractView";
 import {
   CheckCircle,
   AlertCircle,
@@ -286,7 +289,9 @@ export default function SignPage() {
                   </h3>
                 </div>
                 <div className="px-6 py-4">
-                  {typeof document.content === 'object' && document.content !== null && 'fields' in document.content && Array.isArray((document.content as any).fields) ? (
+                  {isRiskCheckContract(document.content) ? (
+                    <RiskCheckContractView content={document.content} />
+                  ) : typeof document.content === 'object' && document.content !== null && 'fields' in document.content && Array.isArray((document.content as any).fields) ? (
                     <div className="space-y-4">
                       {(document.content as any).fields.map((field: any, idx: number) => (
                         <div key={field.id || idx} className="border-b border-gray-200 pb-3 last:border-0 last:pb-0">

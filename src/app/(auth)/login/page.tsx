@@ -218,13 +218,13 @@ function LoginPageContent() {
         {/* Footer */}
         <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
           By signing in, you agree to our{" "}
-          <a href="#" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          <Link href="/legal/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             Terms of Service
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a href="#" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          <Link href="/legal/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             Privacy Policy
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import SignaturePad from "@/components/SignaturePad";
 import RiskCheckContractView, {
   isRiskCheckContract,
@@ -340,8 +341,26 @@ export default function SignPage() {
                     className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm text-slate-700">
-                    I agree that my signature is legally binding and
-                    authenticate the contents of this document.
+                    I consent to sign this document electronically. I agree
+                    that my electronic signature has the same legal effect as
+                    a handwritten signature and I authenticate the contents
+                    of this document. See our{" "}
+                    <Link
+                      href="/legal/esign-consent"
+                      target="_blank"
+                      className="text-indigo-600 hover:underline font-medium"
+                    >
+                      E-Signature Disclosure &amp; Consent
+                    </Link>
+                    {" "}and{" "}
+                    <Link
+                      href="/legal/privacy"
+                      target="_blank"
+                      className="text-indigo-600 hover:underline font-medium"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
                   </span>
                 </label>
               </div>

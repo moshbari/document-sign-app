@@ -281,14 +281,24 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-indigo-400 transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-indigo-400 transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-indigo-400 transition-colors">Cookies</a></li>
+                <li><Link href="/legal" className="hover:text-indigo-400 transition-colors">Legal Center</Link></li>
+                <li><Link href="/legal/terms" className="hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
+                <li><Link href="/legal/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/legal/cookies" className="hover:text-indigo-400 transition-colors">Cookie Policy</Link></li>
+                <li><Link href="/legal/esign-consent" className="hover:text-indigo-400 transition-colors">E-Signature Consent</Link></li>
+                <li><Link href="/legal/dpa" className="hover:text-indigo-400 transition-colors">DPA</Link></li>
+                <li><Link href="/legal/security" className="hover:text-indigo-400 transition-colors">Security</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm text-slate-400">
-            <p>&copy; 2024 OneSign. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} ZPresso LLC. All rights reserved.
+              <span className="hidden sm:inline">&nbsp;&middot;&nbsp;</span>
+              <span className="block sm:inline text-slate-500">
+                OneSign is operated by ZPresso LLC, a free-zone company in SHAMS, UAE.
+              </span>
+            </p>
             <div className="flex gap-6 mt-4 sm:mt-0">
               <a href="#" className="hover:text-indigo-400 transition-colors">Twitter</a>
               <a href="#" className="hover:text-indigo-400 transition-colors">LinkedIn</a>

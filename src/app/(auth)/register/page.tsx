@@ -262,13 +262,17 @@ function RegisterPageContent() {
               />
               <span className="text-sm text-slate-600 dark:text-slate-400">
                 I agree to the{" "}
-                <a href="#" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                <Link href="/legal/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
                   Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="#" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                </Link>
+                ,{" "}
+                <Link href="/legal/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
                   Privacy Policy
-                </a>
+                </Link>
+                , and{" "}
+                <Link href="/legal/esign-consent" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                  E-Signature Consent
+                </Link>
               </span>
             </label>
 

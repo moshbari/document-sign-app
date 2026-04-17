@@ -1,9 +1,25 @@
-import { ArrowRight, CheckCircle, Send, BarChart3, PenTool } from "lucide-react";
+import { ArrowRight, Send, BarChart3, PenTool, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950">
+      {/* Top utility bar: free tool */}
+      <div className="bg-slate-900 text-slate-100 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-center gap-2 text-center">
+          <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0" />
+          <span className="text-slate-300">
+            New free tool:
+          </span>
+          <Link
+            href="/risk-check"
+            className="font-semibold text-white underline underline-offset-2 hover:text-indigo-300"
+          >
+            Deadbeat Client Risk Check — 90 seconds, no signup
+          </Link>
+        </div>
+      </div>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,7 +28,13 @@ export default function Home() {
               <PenTool className="w-8 h-8 text-indigo-600" />
               <span className="text-2xl font-bold text-slate-900 dark:text-white">OneSign</span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-2 sm:gap-4 items-center">
+              <Link
+                href="/risk-check"
+                className="hidden sm:inline-flex px-3 py-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors"
+              >
+                Risk Check
+              </Link>
               <Link
                 href="/login"
                 className="px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors"
@@ -166,6 +188,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Free Tool Section */}
+      <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-5xl mx-auto">
+          <div className="rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg p-8 sm:p-12 flex flex-col lg:flex-row gap-8 items-start">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-sm font-semibold mb-4">
+                <ShieldCheck className="w-4 h-4" />
+                Free tool · 90 seconds · No signup
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+                Before you sign the contract, find out if they&apos;ll pay.
+              </h2>
+              <p className="text-lg text-slate-600 dark:text-slate-300 mb-6">
+                The <strong>Deadbeat Client Risk Check</strong> is a 12-question assessment that tells you whether your next client is likely to ghost the invoice — and gives you the exact contract clauses to protect yourself if they&apos;re risky.
+              </p>
+              <Link
+                href="/risk-check"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"
+              >
+                Run the check <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+            <div className="shrink-0 w-full lg:w-auto">
+              <div className="grid grid-cols-3 gap-3 lg:gap-4">
+                <div className="text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                  <div className="text-3xl font-bold text-indigo-600">12</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">questions</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                  <div className="text-3xl font-bold text-indigo-600">90s</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">to finish</div>
+                </div>
+                <div className="text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                  <div className="text-3xl font-bold text-indigo-600">$0</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">no signup</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 sm:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
@@ -200,7 +264,8 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-indigo-400 transition-colors">Features</a></li>
+                <li><Link href="/risk-check" className="hover:text-indigo-400 transition-colors">Risk Check (free)</Link></li>
+                <li><a href="#features" className="hover:text-indigo-400 transition-colors">Features</a></li>
                 <li><a href="#" className="hover:text-indigo-400 transition-colors">Pricing</a></li>
                 <li><a href="#" className="hover:text-indigo-400 transition-colors">Security</a></li>
               </ul>

@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { sendSigningInvite } from '@/lib/email';
 import { NextResponse } from 'next/server';
 
 export async function POST(
@@ -41,11 +42,26 @@ export async function POST(
       );
     }
 
-    // TODO: Send emails to pending signers
-    // const emailPromises = pendingSigners.map((signer) =>
-    //   sendSigningInviteEmail(signer, document)
-    // );
-    // await Promise.all(emailPromises);
+    const baseUrl =
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'http://localhost:3000';
+
+    // Send invitation emails to all pending signers
+    const results = await Promise.allSettled(
+      pendingSigners.map((signer: any) =>
+        sendSigningInvite({
+          signerEmail: signer.email,
+          signerName: signer.name,
+          documentTitle: document.title,
+          signingLink: `${baseUrl}/sign/${signer.token}`,
+          senderName: session.user?.name || 'OneSign',
+        })
+      )
+    );
+
+    const sent = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
 
     // Create audit log
     await db.auditLog.create({
@@ -59,7 +75,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      sentTo: pendingSigners.length,
+      sentTo: sent,
+      failed,
     });
   } catch (error) {
     console.error('Error resending invites:', error);

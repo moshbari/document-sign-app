@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Share2 } from "lucide-react";
+import { trackRiskCheckEvent } from "@/lib/risk-check-analytics";
 
 export default function ShareButton({
   variant = "icon",
@@ -23,6 +24,7 @@ export default function ShareButton({
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title, text, url });
+        trackRiskCheckEvent("share", { method: "native" });
         return;
       } catch {
         // user cancelled; fall through to clipboard
@@ -32,6 +34,7 @@ export default function ShareButton({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      trackRiskCheckEvent("share", { method: "clipboard" });
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       // ignore

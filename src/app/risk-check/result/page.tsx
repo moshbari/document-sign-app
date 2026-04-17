@@ -17,6 +17,8 @@ import {
 } from "@/lib/risk-check";
 import CopyButton from "@/components/risk-check/CopyButton";
 import ShareButton from "@/components/risk-check/ShareButton";
+import LeadCapture from "@/components/risk-check/LeadCapture";
+import AnalyticsBeacon from "@/components/risk-check/AnalyticsBeacon";
 
 export const dynamic = "force-dynamic";
 
@@ -179,6 +181,8 @@ export default async function RiskCheckResult({
                 <CopyButton
                   text={allClausesText}
                   label="Copy all clauses"
+                  analyticsEvent="copy_all"
+                  analyticsPayload={{ count: result.clauses.length }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-md"
                 />
               </div>
@@ -196,6 +200,8 @@ export default async function RiskCheckResult({
                       <CopyButton
                         text={c.body}
                         label="Copy"
+                        analyticsEvent="copy_clause"
+                        analyticsPayload={{ title: c.title }}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-slate-600 hover:text-indigo-600 font-medium border border-slate-200 dark:border-slate-700 rounded"
                         icon={<Copy className="w-3 h-3" />}
                       />
@@ -225,6 +231,15 @@ export default async function RiskCheckResult({
               </div>
             </div>
           )}
+
+          {/* Lead capture — always shown, wording adapts to level */}
+          <LeadCapture percent={result.percent} level={result.level} />
+
+          {/* Analytics beacon — fires "complete" exactly once on mount */}
+          <AnalyticsBeacon
+            event="complete"
+            payload={{ percent: result.percent, level: result.level }}
+          />
 
           {/* CTA */}
           <section className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-2xl p-6 sm:p-10 mb-10">

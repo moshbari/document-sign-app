@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, PenTool, ShieldCheck } from "lucide-react";
 import { AnswerIndex, QUESTIONS, encodeAnswers } from "@/lib/risk-check";
+import { trackRiskCheckEvent } from "@/lib/risk-check-analytics";
 
 export default function QuizClient() {
   const router = useRouter();
@@ -12,6 +13,10 @@ export default function QuizClient() {
   const [answers, setAnswers] = useState<Array<AnswerIndex | null>>(
     () => Array(QUESTIONS.length).fill(null)
   );
+
+  useEffect(() => {
+    trackRiskCheckEvent("start");
+  }, []);
 
   const q = QUESTIONS[step];
   const isFirst = step === 0;

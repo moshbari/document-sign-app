@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 export const metadata: Metadata = {
   title: "OneSign - Digital Document Signing",
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased scroll-smooth">
       <body className="min-h-full flex flex-col bg-white dark:bg-slate-950 text-foreground font-sans">
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );

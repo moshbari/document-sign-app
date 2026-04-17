@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LEGAL_CONFIG as C } from "@/lib/legal-config";
+import CookieSettingsButton from "@/components/CookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "Cookie Policy",
@@ -17,6 +18,13 @@ export default function CookiesPage() {
         <br />
         <strong>Last updated:</strong> {C.lastUpdated}
       </p>
+
+      <div className="not-prose my-6 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p className="text-sm text-slate-700 dark:text-slate-300 m-0">
+          Review or change the cookie categories you&rsquo;ve agreed to.
+        </p>
+        <CookieSettingsButton />
+      </div>
 
       <p>
         This Cookie Policy explains how {C.legalEntity} (&ldquo;

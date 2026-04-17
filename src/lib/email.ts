@@ -1,33 +1,11 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// Create transporter based on environment
-const createTransporter = () => {
-  if (process.env.NODE_ENV === "development") {
-    // Use Ethereal Email for development (test email service)
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.ethereal.email",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true", // false for SMTP, true for SMTPS
-      auth: {
-        user: process.env.SMTP_USER || "test@ethereal.email",
-        pass: process.env.SMTP_PASS || "test_password",
-      },
-    });
-  }
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
-  // Production: use real SMTP server
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
-
-const transporter = createTransporter();
+const FROM = process.env.EMAIL_FROM || "OneSign <noreply@onesign.click>";
+const REPLY_TO = process.env.EMAIL_REPLY_TO || "support@onesign.click";
 
 interface SendSigningInviteOptions {
   signerEmail: string;
@@ -176,7 +154,7 @@ export async function sendSigningInvite({
             </div>
             <div class="footer">
               <p>OneSign - Secure Digital Document Signing</p>
-              <p>© 2026 OneSign. All rights reserved.</p>
+              <p>&copy; 2026 OneSign. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -200,24 +178,29 @@ If you have any questions or did not expect this request, please contact the sen
 
 ---
 OneSign - Secure Digital Document Signing
-© 2026 OneSign. All rights reserved.
   `.trim();
 
-  try {
-    const result = await transporter.sendMail({
-      from: process.env.SMTP_FROM || `noreply@onesign.app`,
-      to: signerEmail,
-      subject: `${senderName} has sent you a document to sign: ${documentTitle}`,
-      text: textContent,
-      html: htmlContent,
-    });
-
-    console.log(`Email sent to ${signerEmail}:`, result.messageId);
-    return result;
-  } catch (error) {
-    console.error(`Failed to send email to ${signerEmail}:`, error);
-    throw error;
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping send. Link:", signingLink);
+    return { id: "dev-skip" };
   }
+
+  const { data, error } = await resend.emails.send({
+    from: FROM,
+    to: signerEmail,
+    replyTo: REPLY_TO,
+    subject: `${senderName} has sent you a document to sign: ${documentTitle}`,
+    html: htmlContent,
+    text: textContent,
+  });
+
+  if (error) {
+    console.error(`[email] Failed to send signing invite to ${signerEmail}:`, error);
+    throw new Error(error.message || "Failed to send email");
+  }
+
+  console.log(`[email] Signing invite sent to ${signerEmail}:`, data?.id);
+  return data;
 }
 
 export async function sendDocumentCompleted({
@@ -290,14 +273,14 @@ export async function sendDocumentCompleted({
               Hi <strong>${recipientName}</strong>,
             </div>
             <div class="success-message">
-              <strong>✓ Success!</strong> All parties have signed the document: <strong>${documentTitle}</strong>
+              <strong>&#10003; Success!</strong> All parties have signed the document: <strong>${documentTitle}</strong>
             </div>
             <div style="font-size: 15px; line-height: 1.8; color: #555; margin: 20px 0;">
               The document is now complete and all signatures have been recorded. You can download a copy of the signed document from your OneSign dashboard.
             </div>
             <div class="footer">
               <p>OneSign - Secure Digital Document Signing</p>
-              <p>© 2026 OneSign. All rights reserved.</p>
+              <p>&copy; 2026 OneSign. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -305,17 +288,36 @@ export async function sendDocumentCompleted({
     </html>
   `;
 
-  try {
-    const result = await transporter.sendMail({
-      from: process.env.SMTP_FROM || `noreply@onesign.app`,
-      to: recipientEmail,
-      subject: `Document Signed: ${documentTitle}`,
-      html: htmlContent,
-    });
+  const textContent = `
+Hi ${recipientName},
 
-    return result;
-  } catch (error) {
-    console.error(`Failed to send completion email to ${recipientEmail}:`, error);
-    throw error;
+All parties have signed the document: ${documentTitle}
+
+The document is now complete and all signatures have been recorded. You can download a copy of the signed document from your OneSign dashboard.
+
+---
+OneSign - Secure Digital Document Signing
+  `.trim();
+
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping completion send to", recipientEmail);
+    return { id: "dev-skip" };
   }
+
+  const { data, error } = await resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Document Signed: ${documentTitle}`,
+    html: htmlContent,
+    text: textContent,
+  });
+
+  if (error) {
+    console.error(`[email] Failed to send completion email to ${recipientEmail}:`, error);
+    throw new Error(error.message || "Failed to send email");
+  }
+
+  console.log(`[email] Completion email sent to ${recipientEmail}:`, data?.id);
+  return data;
 }
